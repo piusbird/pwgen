@@ -1,0 +1,60 @@
+#!/bin/bash
+
+len=10
+charset='A-Za-z0-9#$'
+nmbr=5
+mode=0
+rounds=2
+usage() {
+
+	echo "$0 -l <length> -c '<charset>' -n <number>"
+	echo Generates a set of random passwords 
+
+}
+
+genpass_rnd() {
+
+	head -c `echo "$rounds * 8" | bc` /dev/random | base64 | tr '+=/' '$_@'
+	return
+}
+genpass() {
+
+	cat /dev/urandom | tr -dc $charset | fold -w $len | head -n $nmbr
+}
+
+if [ $# -gt 0 ]; then
+    while [ "$1" != "" ]; do
+    case $1 in
+        -l | --length )         shift
+                                len=$1
+                                ;;
+        -c | --charset )        shift
+				charset=$1
+                                ;;
+	-n | --number )		shift
+				nmbr=$1
+				;;
+        -h | --help )           usage
+                                exit
+                                ;;
+
+	-x | --rounds )         shift
+                                rounds=$1
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+fi
+if [[ $0 == *rndpasswd* ]];
+then 
+	mode=1
+fi
+if [ $mode -eq 1 ]; then
+	genpass_rnd
+else
+	genpass 
+fi
+
+exit 0
